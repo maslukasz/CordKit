@@ -9,7 +9,7 @@ group :development, :test do
   gem "rspec", "~> 3.13"
   gem "rubocop", "~> 1.77"
   gem "rubocop-performance", "~> 1.25"
-  gem "simplecov", "~> 0.22"
+  gem "simplecov", "~> 1.2"
   gem "webmock", "~> 3.24"
   gem "yard", "~> 0.9"
 end
