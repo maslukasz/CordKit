@@ -122,6 +122,23 @@ module CordKit
       register_plugin(plugin_class)
     end
 
+    # Requires every Ruby file under a directory and registers the plugins those
+    # files define. Plugins that are already registered are left untouched.
+    #
+    # @param path [String] Directory to load, relative to the working directory.
+    # @param pattern [String] Glob applied inside +path+.
+    # @return [self]
+    def load_plugins(path = "plugins", pattern: "**/*.rb")
+      before = Plugin.registry.dup
+      Dir[File.join(path, pattern)].sort.each { |file| require File.expand_path(file) }
+
+      (Plugin.registry - before).each do |plugin_class|
+        register_plugin(plugin_class) unless @plugins.key?(plugin_class.plugin_name)
+      end
+
+      self
+    end
+
     # Synchronizes commands with Discord.
     # @param scope [Symbol, nil]
     # @param mode [Symbol, nil]

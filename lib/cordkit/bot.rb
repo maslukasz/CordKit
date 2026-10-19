@@ -18,6 +18,7 @@ module CordKit
     # @param discord_options [Hash] Options forwarded to discordrb.
     # @yieldparam config [CordKit::Configuration]
     def initialize(token: nil, cordkit: {}, **discord_options, &block)
+      token ||= ENV.fetch("DISCORD_TOKEN", nil) || ENV.fetch("DISCORD_BOT_TOKEN", nil)
       cordkit_options = extract_cordkit_options(discord_options)
       super(token: token, **discord_options)
       @cordkit = Runtime.new(self, **cordkit.merge(cordkit_options), &block)
@@ -29,6 +30,14 @@ module CordKit
       @cordkit.register_plugin(plugin_class)
     end
     alias load_plugin plugin
+
+    # Requires every plugin file under a directory and registers the plugins it defines.
+    # @param path [String]
+    # @return [self]
+    def load_plugins(path = "plugins")
+      @cordkit.load_plugins(path)
+      self
+    end
 
     # @see CordKit::Runtime#unload_plugin
     def unload_plugin(plugin_name)

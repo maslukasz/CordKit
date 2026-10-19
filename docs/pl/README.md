@@ -30,15 +30,25 @@ end
 ```ruby
 # bot.rb
 require "cordkit"
-require_relative "plugins/ping"
 
-bot = CordKit::Bot.new(token: ENV.fetch("DISCORD_TOKEN")) do |config|
+bot = CordKit::Bot.new do |config|
   config.guild_ids = [123456789012345678] # używane w trybie development
 end
 
-bot.plugin Ping
+bot.load_plugins("plugins") # wczytuje plugins/**/*.rb i rejestruje pluginy
 bot.run
 ```
+
+Token jest czytany automatycznie ze zmiennej `DISCORD_TOKEN` (lub `DISCORD_BOT_TOKEN`).
+
+Można też rejestrować pluginy ręcznie:
+
+```ruby
+require_relative "plugins/ping"
+bot.plugin Ping
+```
+
+Opis komendy jest opcjonalny — `command :ping do |ctx| ... end` wygeneruje opis „Ping command”.
 
 ## Konfiguracja
 
@@ -64,12 +74,24 @@ command :config, "Konfiguracja" do
     run { |ctx| ctx.respond "Wartość: #{ctx[:key]}" }
   end
 
-  subcommand_group :admin, "Administracja" do
-    subcommand :set, "Zapis" do
-      option :key, :string, "Klucz", required: true
-      option :value, :string, "Wartość", required: true
+  subcommand :set, "Zapis" do
+    option :key, :string, "Klucz", required: true
+    option :value, :string, "Wartość", required: true
+    require_permissions :manage_server
+    run { |ctx| ctx.respond "Zapisano." }
+  end
+end
+```
+
+Grupy podkomend dodają drugi poziom (`/admin config show`). Nie mieszaj podkomend i grup na tym
+samym poziomie — Discord na to nie pozwala:
+
+```ruby
+command :admin, "Administracja" do
+  subcommand_group :config, "Konfiguracja" do
+    subcommand :show, "Pokaż wszystko" do
       require_permissions :manage_server
-      run { |ctx| ctx.respond "Zapisano." }
+      run { |ctx| ctx.respond "..." }
     end
   end
 end

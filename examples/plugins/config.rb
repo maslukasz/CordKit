@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-# Options, subcommands, groups, checks and autocomplete.
+# Options, autocomplete, subcommands, subcommand groups and checks.
 class Config < CordKit::Plugin
   SETTINGS = {
     "welcome" => "Welcome to the server!",
     "goodbye" => "See you soon!"
   }.freeze
 
-  command :config, "Read and write bot settings" do
+  command :config, "Read bot settings" do
     subcommand :get, "Read a setting" do
       option :key, :string, "Setting name", required: true, autocomplete: true
       autocomplete :key do |ctx|
@@ -24,8 +24,11 @@ class Config < CordKit::Plugin
         ctx.respond SETTINGS.keys.join(", ")
       end
     end
+  end
 
-    subcommand_group :admin, "Administrative actions" do
+  # Subcommand groups add a second level: /admin config show
+  command :admin, "Administrative actions" do
+    subcommand_group :config, "Configuration" do
       subcommand :show, "Show every setting" do
         require_permissions :manage_server
         guild_only

@@ -2,8 +2,12 @@
 
 # Raw discordrb events are still available.
 class Events < CordKit::Plugin
-  on :server_join do |event|
+  on :server_create do |event|
     logger.info("Joined server #{event.server.name}")
+  end
+
+  on :member_join do |event|
+    logger.info("#{event.user.name} joined")
   end
 
   on :message, start_with: "!" do |event|

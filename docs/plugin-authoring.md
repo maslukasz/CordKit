@@ -14,6 +14,9 @@ plugins/
 
 Each plugin should live in its own file and define exactly one `CordKit::Plugin` subclass.
 
+Load the directory with `bot.load_plugins("plugins")`, or register each class explicitly with
+`bot.plugin MyPlugin`.
+
 ## Naming
 
 Route and custom ID names must match `/\A[a-z0-9_-]{1,32}\z/`. Use short, stable names. Renaming a

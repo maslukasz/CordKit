@@ -30,17 +30,17 @@ end
 ```ruby
 # bot.rb
 require "cordkit"
-require_relative "plugins/ping"
 
-bot = CordKit::Bot.new(token: ENV.fetch("DISCORD_TOKEN")) do |config|
+bot = CordKit::Bot.new do |config|
   config.guild_ids = [123456789012345678] # used in development
 end
 
-bot.plugin Ping
+bot.load_plugins("plugins") # requires plugins/**/*.rb and registers the plugins
 bot.run
 ```
 
-That is the whole happy path: one file for a command, one file for the bot.
+That is the whole happy path: one file for a command, one file for the bot. The token is read from
+`DISCORD_TOKEN` (or `DISCORD_BOT_TOKEN`) automatically.
 
 ## Table of contents
 
@@ -97,16 +97,20 @@ CordKit requires Ruby 3.2 or newer and discordrb 3.8 or newer.
 
 require "cordkit"
 
-bot = CordKit::Bot.new(token: ENV.fetch("DISCORD_TOKEN")) do |config|
+bot = CordKit::Bot.new do |config|
   # In development CordKit registers commands in these servers by default.
   # In production it registers global commands.
   config.guild_ids = [123456789012345678]
 end
 
+bot.load_plugins("plugins")
 bot.run
 ```
 
-5. Add your first plugin:
+`CordKit::Bot` reads the token from `DISCORD_TOKEN` (or `DISCORD_BOT_TOKEN`), so you never repeat it in
+code. `load_plugins` requires every `*.rb` file under `plugins/` and registers the plugins it finds.
+
+5. Add your first plugin as `plugins/ping.rb`:
 
 ```ruby
 # frozen_string_literal: true
@@ -118,14 +122,14 @@ class Ping < CordKit::Plugin
 end
 ```
 
-6. Load it and run the bot:
+6. Run the bot:
 
 ```ruby
-require_relative "plugins/ping"
-
-bot.plugin Ping
 bot.run
 ```
+
+`load_plugins("plugins")` already required `plugins/ping.rb` and registered `Ping`. If you prefer to
+be explicit, `require_relative "plugins/ping"` and `bot.plugin Ping` still work.
 
 When the bot becomes ready, CordKit synchronizes the commands automatically.
 
@@ -144,6 +148,15 @@ command :ping, "Replies with pong" do |ctx|
 end
 ```
 
+The description is optional. When you omit it, CordKit generates a readable one (`:ping` becomes
+"Ping command"), which is handy while prototyping:
+
+```ruby
+command :ping do |ctx|
+  ctx.respond "Pong!"
+end
+```
+
 The advanced form is a configuration block. If the block has no arguments it configures the command;
 if it has an argument it is treated as the handler:
 
@@ -156,7 +169,8 @@ command :echo, "Echoes text" do
 end
 ```
 
-`run`, `handle` and `execute` are aliases. A command must have a description between 1 and 100 characters.
+`run`, `handle` and `execute` are aliases. If you skip the description, CordKit derives one from the
+command name; otherwise it must be between 1 and 100 characters.
 
 ### Options
 
@@ -187,6 +201,8 @@ Values are normalized by CordKit:
 
 ### Subcommands and groups
 
+Subcommands group related actions under one command:
+
 ```ruby
 command :config, "Bot configuration" do
   subcommand :get, "Read a setting" do
@@ -194,19 +210,30 @@ command :config, "Bot configuration" do
     run { |ctx| ctx.respond "Value: #{config_value(ctx[:key])}" }
   end
 
-  subcommand_group :admin, "Administrative actions" do
-    subcommand :set, "Write a setting" do
-      option :key, :string, "Setting name", required: true
-      option :value, :string, "Setting value", required: true
+  subcommand :set, "Write a setting" do
+    option :key, :string, "Setting name", required: true
+    option :value, :string, "Setting value", required: true
+    require_permissions :manage_server
+    run { |ctx| ctx.respond "Saved." }
+  end
+end
+```
+
+Use `subcommand_group` when you want a second level, for example `/admin config reload`:
+
+```ruby
+command :admin, "Administrative actions" do
+  subcommand_group :config, "Configuration" do
+    subcommand :reload, "Reload configuration" do
       require_permissions :manage_server
-      run { |ctx| ctx.respond "Saved." }
+      run { |ctx| ctx.respond "Reloaded." }
     end
   end
 end
 ```
 
-Discord does not allow mixing direct subcommands and subcommand groups at the same level,
-so CordKit rejects that during validation.
+Discord does not allow mixing direct subcommands and subcommand groups at the same level, so CordKit
+rejects that during validation.
 
 ### Autocomplete
 
@@ -394,12 +421,28 @@ on :message, start_with: "!" do |event|
   event.respond "Commands use slash commands now."
 end
 
-on :server_join do |event|
+on :server_create do |event|
   logger.info("Joined #{event.server.name}")
 end
 ```
 
 The handler receives the original discordrb event object.
+
+### Loading plugins
+
+Plugins are plain classes. Register them one by one with `bot.plugin`, or point `load_plugins` at a
+directory and let CordKit require and register everything it finds:
+
+```ruby
+bot.plugin Ping
+bot.plugin Tickets
+
+bot.load_plugins("plugins")                      # plugins/**/*.rb
+bot.load_plugins("app/commands", pattern: "*.rb")
+```
+
+`load_plugins` is idempotent: plugins that are already registered are left untouched, and plugins
+defined by those files are registered once.
 
 ## Sending responses
 

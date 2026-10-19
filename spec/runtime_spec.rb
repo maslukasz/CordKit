@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "tmpdir"
+
 RSpec.describe CordKit::Runtime do
   let(:container) { FakeContainer.new }
   let(:runtime) { described_class.new(container, sync: false) }
@@ -107,5 +109,25 @@ RSpec.describe CordKit::Runtime do
     runtime.stop
 
     expect(container.handlers.size).to be < handler_count
+  end
+
+  describe "#load_plugins" do
+    it "requires plugin files and registers the plugins they define" do
+      Dir.mktmpdir do |dir|
+        File.write(File.join(dir, "greeter.rb"), <<~RUBY)
+          class LoadPluginsGreeter < CordKit::Plugin
+            plugin_name :load_plugins_spec
+            command :greet, "Greets" do |ctx|
+              ctx.respond "hi"
+            end
+          end
+        RUBY
+
+        runtime.load_plugins(dir)
+
+        expect(runtime.plugins).to have_key(:load_plugins_spec)
+        expect(container.application_commands).to have_key("greet")
+      end
+    end
   end
 end

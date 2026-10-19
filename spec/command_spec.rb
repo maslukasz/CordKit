@@ -88,4 +88,11 @@ RSpec.describe CordKit::Command do
 
     expect(command.normalize_options(raw_event)).to eq(user: :server_member)
   end
+
+  it "derives a description when none is provided" do
+    builder = CordKit::CommandBuilder.new(:daily_reward, plugin_class: plugin_class)
+    builder.run { |ctx| ctx.respond("ok") }
+
+    expect(builder.to_command.description).to eq("Daily reward command")
+  end
 end

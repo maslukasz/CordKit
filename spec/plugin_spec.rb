@@ -21,6 +21,17 @@ RSpec.describe CordKit::Plugin do
     expect(command.handler).to be_a(Proc)
   end
 
+  it "allows omitting the command description" do
+    plugin = Class.new(described_class) do
+      plugin_name :no_description_spec
+      command :daily_reward do |ctx|
+        ctx.respond("ok")
+      end
+    end
+
+    expect(plugin.commands.first.description).to eq("Daily reward command")
+  end
+
   it "defines advanced commands with options and subcommands" do
     plugin = Class.new(described_class) do
       plugin_name :advanced_spec

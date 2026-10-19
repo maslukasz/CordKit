@@ -24,6 +24,7 @@ module CordKit
     def initialize(name, plugin_class:, description: nil, type: :chat_input, parent: nil)
       @name = name.to_s
       @description = description.to_s
+      @description = default_description(@name) if @description.empty?
       @type = type.to_sym
       @plugin_class = plugin_class
       @parent = parent
@@ -295,6 +296,17 @@ module CordKit
     alias build to_command
 
     private
+
+    # Builds a readable description when the author does not provide one, so
+    # `command :ping do ... end` is valid for beginners.
+    # @param name [String]
+    # @return [String]
+    def default_description(name)
+      words = name.to_s.tr("_-", " ").strip
+      return "Command" if words.empty?
+
+      "#{words[0].upcase}#{words[1..]} command"
+    end
 
     def check_message(message)
       message ? { message: message } : {}

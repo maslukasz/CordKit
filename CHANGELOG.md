@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `CordKit::Bot#load_plugins` / `CordKit::Runtime#load_plugins` to require a directory of plugin
+  files and register the plugins they define.
+- `CordKit::Bot` now reads the token from `DISCORD_TOKEN` or `DISCORD_BOT_TOKEN` when `token:` is
+  omitted.
+- Command descriptions are optional; CordKit derives one from the command name when it is missing.
+
 ## [0.1.0] - 2026-10-19
 
 ### Added
