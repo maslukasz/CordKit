@@ -1,0 +1,66 @@
+plugins:
+  - rubocop-performance
+
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - "vendor/**/*"
+    - "tmp/**/*"
+
+Layout/LineLength:
+  Max: 120
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 45
+
+Metrics/ClassLength:
+  Max: 400
+
+Metrics/ParameterLists:
+  Max: 20
+
+Metrics/BlockLength:
+  Max: 40
+  Exclude:
+    - "spec/**/*"
+    - "examples/**/*"
+
+Naming/PredicateMethod:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/ArgumentsForwarding:
+  Enabled: false
+
+Style/RedundantBegin:
+  Enabled: false
+
+Lint/ConstantDefinitionInBlock:
+  Exclude:
+    - "spec/**/*"
+
+Lint/UselessAssignment:
+  Exclude:
+    - "spec/**/*"
+
+Lint/RedundantDirGlobSort:
+  Enabled: false
+
+Style/RedundantFetchBlock:
+  Enabled: false

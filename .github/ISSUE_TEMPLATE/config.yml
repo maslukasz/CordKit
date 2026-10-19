@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or help
+    url: https://github.com/maslukasz/CordKit/discussions
+    about: Ask questions and share ideas in Discussions.
+  - name: Security report
+    url: https://github.com/maslukasz/CordKit/security/advisories/new
+    about: Report security issues privately.
